@@ -1,17 +1,23 @@
 import {createBrowserRouter} from "react-router-dom"
-import Wallet from "../pages/Wallet"
-import Home from "../pages/Home"
+import LandingPage from "../pages/LandingPage"
 import Navbar from "../components/Navbar"
 import Dashboard from "../components/dashboard"
 import UploadImage from "../components/UploadImage"
+import Userguide from "../components/userguide"
 import GetImage from "../components/GetImage"
+import AboutUs from "../components/AboutUs"
 
-export const routes = createBrowserRouter([
-    {path:"/",element:<Wallet/>},
+
+export const routes = createBrowserRouter(
+
+    [
+    {path:"/",element:<LandingPage/>},
     {path:"/home",element:(
         <div className="mt-10">
            <Navbar/>
 <Dashboard/>
+           
+{/* <Dashboard/> */}
         </div>
     
 )},
@@ -26,6 +32,31 @@ export const routes = createBrowserRouter([
         <div >
            <Navbar/>
            <GetImage/>
+
+        </div>
+    
+)},
+    {path:"/aboutus",element:(
+        <div >
+           <Navbar/>
+           <AboutUs/>
+
+        </div>
+    
+)},
+    {path:"/userguide",element:(
+        <div >
+           <Navbar/>
+           <Userguide/>
+
+        </div>
+    
+)},
+    {path:"/userguidenull",element:(
+        <div >
+
+           <Userguide/>
+
         </div>
     
 )}

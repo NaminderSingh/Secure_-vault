@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const { web3State } = useWeb3Context();
+  const { web3State, updateWeb3State } = useWeb3Context(); // Changed setWeb3State to updateWeb3State
   const { selectedAccount } = web3State;
   const [isScrolled, setIsScrolled] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -25,6 +25,9 @@ const Navbar = () => {
   }, []);
 
   const handleLogout = () => {
+    updateWeb3State({ // Changed to use updateWeb3State instead
+      selectedAccount: null,
+    });
     navigate("/");
   };
 
@@ -68,8 +71,8 @@ const Navbar = () => {
             <Link to="/myfiles" className="hover:text-white transition-colors flex items-center gap-1">
               <FileText size={16} /> My Files
             </Link>
-            <Link to="/settings" className="hover:text-white transition-colors flex items-center gap-1">
-              <Settings size={16} /> Settings
+            <Link to="/aboutUs" className="hover:text-white transition-colors flex items-center gap-1">
+              <Settings size={16} /> About us
             </Link>
           </div>
 

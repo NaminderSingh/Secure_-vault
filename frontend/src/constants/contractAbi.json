@@ -31,7 +31,7 @@
 			},
 			{
 				"internalType": "string",
-				"name": "_fileName",
+				"name": "_name",
 				"type": "string"
 			}
 		],
@@ -59,11 +59,11 @@
 					},
 					{
 						"internalType": "string",
-						"name": "fileName",
+						"name": "name",
 						"type": "string"
 					}
 				],
-				"internalType": "struct Upload.FileData[]",
+				"internalType": "struct Upload.Image[]",
 				"name": "",
 				"type": "tuple[]"
 			}

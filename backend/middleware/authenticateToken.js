@@ -8,7 +8,6 @@ async function authenticateToken(req,res,next){
         }  
         const decoded = jwt.verify(token,JWT_SECRETKEY)
         req.address=decoded.address;
-        
         next()
     } catch (error) {
         res.status(500).json({message:"Error at authenticate token"})

@@ -28,7 +28,7 @@ export const connectWallet = async()=>{
 
      localStorage.setItem("token",token)
 
-     const contractAddress = "0x1559C0580419acB37d3837818C15BA7781DA5F8c"
+     const contractAddress = "0x29d99ddf9e2F513402AcBFe574627261f8f53562"
      const contractInstance = new ethers.Contract(contractAddress,contractAbi,signer);
      return {contractInstance,selectedAccount}
  } catch (error) {

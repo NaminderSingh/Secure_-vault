@@ -8,7 +8,11 @@ const userModel = require('../models/User');
 
 async function uploadImageController(req, res) {
   try {
+    if (!req.file || !req.file.buffer) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
     const address = req.address;
+
     const userAddress = address.toLowerCase();
 
     // Find user in DB
@@ -21,12 +25,12 @@ async function uploadImageController(req, res) {
     if (!user.encryptionKey) {
       const encryptionKey = generateEncryptionKey(32);
       user.encryptionKey = encryptionKey;
+      console.log("created encrytpion key")
       await user.save();
     }
 
     // Encrypt uploaded file buffer
     const { encryptedData, iv } = encryptFile(req.file.buffer, user.encryptionKey);
-
 // Bundle both encrypted data and IV into an object
 const dataToUpload = {
   encryptedData: encryptedData.toString('base64'), // Convert to base64 for easy storage
@@ -49,8 +53,8 @@ const response = await axios.post(
   formData,
   {
     headers: {
-      pinata_api_key: "660d78a084031c916392",
-      pinata_secret_api_key: "32c5671d540a3e18f4b4fbf6d5c26558d0ebd82a7cf9846d7c39d13ad5a03e5e",
+      pinata_api_key: "cf8304865daf5304ec3d",
+      pinata_secret_api_key: "fbe8c3418bbc3daac6ab44b84f4b2573a8d914f30ab99f75507fe73e251fc78c",
       ...formData.getHeaders()
     }
   }

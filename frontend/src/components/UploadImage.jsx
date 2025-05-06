@@ -4,7 +4,7 @@ import { useWeb3Context } from "../contexts/useWeb3Context";
 import toast from "react-hot-toast";
 import { Lock, ImageIcon, Upload, AlertCircle } from "lucide-react";
 
-const UploadImage = ({ reloadEffect }) => {
+const UploadImage = () => {
   const [file, setFile] = useState(null);
   const [fileSize, setFileSize] = useState(0);
   const [fileName, setFileName] = useState("");
@@ -97,13 +97,13 @@ const UploadImage = ({ reloadEffect }) => {
         setFile(null);
         setFileSize(0);
         setFileName("");
-        reloadEffect();
+        
       } else {
         throw new Error("Invalid response from server");
       }
     } catch (error) {
       console.error(error);
-      toast.error("Image upload failed");
+
     } finally {
       setUploading(false);
       setEncryptionProgress(0);

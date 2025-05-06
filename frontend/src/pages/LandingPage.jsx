@@ -3,13 +3,20 @@ import { connectWallet } from "../utils/connectWallet";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Lock, Shield, Key, Share, Eye, EyeOff } from "lucide-react";
+import img from "./image.png"
+import web3 from "./web3.webp"
+import imgsecurity from "./imagesecurity.webp"
+import security from "./security.png"
 
 const Wallet = () => {
   const navigateTo = useNavigate();
   const { updateWeb3State, web3State } = useWeb3Context();
   const { selectedAccount } = web3State;
   const [isScrolled, setIsScrolled] = useState(false);
-
+  const [isLoading, setIsLoading] = useState(false);
+  const handleNavigate = (path) => {
+    navigateTo(path);
+  };
   useEffect(() => {
     if (selectedAccount) {
       navigateTo("/home");
@@ -23,13 +30,26 @@ const Wallet = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [selectedAccount, navigateTo]);
 
-  const handleWalletConnection = async () => {
-    const { contractInstance, selectedAccount } = await connectWallet();
-    updateWeb3State({ contractInstance, selectedAccount });
+  const handleWalletConnection = async (event) => {
+    // Prevent any default behavior
+    if (event) event.preventDefault();
+    
+    // Show loading state
+    setIsLoading(true);
+    
+    try {
+      const { contractInstance, selectedAccount } = await connectWallet();
+      updateWeb3State({ contractInstance, selectedAccount });
+    } catch (error) {
+      console.error("Wallet connection error:", error);
+      // You can add user feedback here
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="bg-black text-white overflow-hidden">
+    <div className="bg-black text-white overflow-hidden ">
       {/* Floating navigation */}
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? "bg-black/80 backdrop-blur-md py-2" : "bg-transparent py-6"}`}>
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
@@ -42,8 +62,9 @@ const Wallet = () => {
           <button
             onClick={handleWalletConnection}
             className="bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 px-6 py-2 rounded-full font-medium transition-all duration-300 shadow-lg shadow-purple-500/25"
+            disabled={isLoading}
           >
-            Connect Wallet
+            {isLoading ? "Connecting..." : "Connect Wallet"}
           </button>
         </div>
       </nav>
@@ -73,16 +94,17 @@ const Wallet = () => {
               <button
                 onClick={handleWalletConnection}
                 className="bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 shadow-lg shadow-purple-500/25 flex items-center justify-center gap-2"
+                disabled={isLoading}
               >
                 <Key size={20} />
-                Unlock Your Vault
+                {isLoading ? "Connecting..." : "Unlock Your Vault"}
               </button>
-              <a
-                href="#learn-more"
+              <button
+              onClick={() => handleNavigate('/userguidenull')}
                 className="border border-gray-700 hover:border-gray-500 px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 text-center"
               >
                 Discover How
-              </a>
+              </button>
             </div>
           </div>
           
@@ -91,7 +113,7 @@ const Wallet = () => {
             <div className="relative w-full aspect-square max-w-lg mx-auto perspective-1000">
               <div className="absolute inset-0 bg-gradient-to-br from-purple-900/40 to-blue-900/40 rounded-3xl border border-gray-800 shadow-2xl shadow-purple-500/10 flex items-center justify-center transform rotate-6 hover:rotate-0 transition-transform duration-500">
                 <img 
-                  src="https://sdmntprsouthcentralus.oaiusercontent.com/files/00000000-03e8-61f7-9c1e-987c28759a4f/raw?se=2025-04-20T09%3A12%3A09Z&sp=r&sv=2024-08-04&sr=b&scid=38f1ee06-993e-53f9-882d-eb4fc7f643e8&skoid=fa7966e7-f8ea-483c-919a-13acfd61d696&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2025-04-19T18%3A25%3A03Z&ske=2025-04-20T18%3A25%3A03Z&sks=b&skv=2024-08-04&sig=TdmS3hbsfRpZ%2BsnGynBjSsTfM93bhCJQgsU%2BfNknD0s%3D" 
+                  src={img} 
                   alt="Encrypted vault visualization" 
                   className="w-3/4 h-3/4 object-cover rounded-2xl shadow-lg opacity-80"
                 />
@@ -222,7 +244,7 @@ const Wallet = () => {
             <div className="relative">
               <div className="w-full aspect-square max-w-md mx-auto relative">
                 <img 
-                 src="https://sdmntprsouthcentralus.oaiusercontent.com/files/00000000-03e8-61f7-9c1e-987c28759a4f/raw?se=2025-04-20T09%3A12%3A09Z&sp=r&sv=2024-08-04&sr=b&scid=38f1ee06-993e-53f9-882d-eb4fc7f643e8&skoid=fa7966e7-f8ea-483c-919a-13acfd61d696&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2025-04-19T18%3A25%3A03Z&ske=2025-04-20T18%3A25%3A03Z&sks=b&skv=2024-08-04&sig=TdmS3hbsfRpZ%2BsnGynBjSsTfM93bhCJQgsU%2BfNknD0s%3D" 
+                  src={img} 
                   alt="SecureVault process visualization" 
                   className="rounded-2xl shadow-2xl shadow-purple-500/10 border border-gray-800 w-full h-full object-cover"
                 />
@@ -268,7 +290,7 @@ const Wallet = () => {
           <div className="grid md:grid-cols-3 gap-6">
             <div className="p-8 bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl border border-gray-800 hover:border-purple-500/30 transition-all duration-300">
               <img 
-                src="/api/placeholder/300/200" 
+                src={security} 
                 alt="Security visualization" 
                 className="w-full h-48 object-cover rounded-lg mb-6 opacity-80"
               />
@@ -280,7 +302,7 @@ const Wallet = () => {
             
             <div className="p-8 bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl border border-gray-800 hover:border-blue-500/30 transition-all duration-300">
               <img 
-                src="/api/placeholder/300/200" 
+                src={web3}
                 alt="Blockchain technology" 
                 className="w-full h-48 object-cover rounded-lg mb-6 opacity-80"
               />
@@ -292,7 +314,7 @@ const Wallet = () => {
             
             <div className="p-8 bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl border border-gray-800 hover:border-purple-500/30 transition-all duration-300">
               <img 
-                src="/api/placeholder/300/200" 
+                src={imgsecurity} 
                 alt="Image protection" 
                 className="w-full h-48 object-cover rounded-lg mb-6 opacity-80"
               />
@@ -321,14 +343,17 @@ const Wallet = () => {
           </p>
           
           <div className="relative">
+            {/* FIXED: This button now uses the same onClick and functionality as the nav button */}
             <button
               onClick={handleWalletConnection}
-              className="bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 px-10 py-5 rounded-xl font-bold text-xl transition-all duration-300 shadow-lg shadow-purple-500/25"
+              className="bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 px-8 py-4 rounded-xl font-bold text-xl transition-all duration-300 shadow-lg shadow-purple-500/25"
+              
+
             >
-              Connect Wallet & Get Started
+              {isLoading ? "Connecting..." : "Connect Wallet & Get Started"}
             </button>
             
-            <div className="absolute -left-1 -top-1 w-full h-full rounded-xl bg-gradient-to-r from-purple-400 to-blue-400 animate-pulse opacity-30 filter blur-sm"></div>
+          
           </div>
         </div>
       </section>
@@ -345,10 +370,7 @@ const Wallet = () => {
             </div>
             
             <div className="flex gap-8">
-              <a href="#" className="text-gray-400 hover:text-white transition-colors duration-300">About</a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors duration-300">Privacy</a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors duration-300">Terms</a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors duration-300">Contact</a>
+             
             </div>
           </div>
           

@@ -7,34 +7,19 @@ import {
   Share2,
   Upload,
   Plus,
-  UserPlus,
+  Shield,
   Clock,
-  Search,
-  Filter,
+  User,
   ChevronRight,
-  X,
-  Shield
+  TrendingUp,
+  Database,
+  ServerCrash,
+  Info,
+  Award,
+  FileText,
+  Search
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
-// Activity item component
-const ActivityItem = ({ icon: Icon, title, time, message, isNew }) => (
-  <div className={`p-4 border-b border-gray-800 flex items-start gap-4 ${isNew ? "bg-purple-900/10" : ""}`}>
-    <div className="w-10 h-10 rounded-full bg-purple-900/30 flex items-center justify-center shrink-0">
-      <Icon size={18} className="text-purple-300" />
-    </div>
-    <div className="flex-grow">
-      <div className="flex justify-between items-start">
-        <h4 className="font-medium text-white">{title}</h4>
-        <span className="text-xs text-gray-400">{time}</span>
-      </div>
-      <p className="text-sm text-gray-300 mt-1">{message}</p>
-    </div>
-    {isNew && (
-      <span className="shrink-0 bg-purple-500 text-xs px-2 py-1 rounded-full text-white">New</span>
-    )}
-  </div>
-);
 
 // Stat card component
 const StatCard = ({ icon: Icon, title, value, change, changeType = "neutral" }) => {
@@ -99,7 +84,7 @@ const UsageChart = ({ size }) => (
   <div className="mt-4">
     <div className="flex justify-between text-xs text-gray-500 mb-1">
       <span>0 MB</span>
-      <span>500 MB</span>
+      <span>50 MB</span>
     </div>
     <div className="h-3 w-full bg-gray-800 rounded-full overflow-hidden">
       <div 
@@ -114,6 +99,40 @@ const UsageChart = ({ size }) => (
   </div>
 );
 
+// Security feature item
+const SecurityFeature = ({ icon: Icon, title, description }) => (
+  <div className="flex items-start gap-3 p-4 border border-gray-800 rounded-lg hover:border-gray-700 transition-all">
+    <div className="w-10 h-10 rounded-full bg-purple-900/30 flex items-center justify-center shrink-0">
+      <Icon size={18} className="text-purple-300" />
+    </div>
+    <div>
+      <h4 className="font-medium text-white">{title}</h4>
+      <p className="text-sm text-gray-400 mt-1">{description}</p>
+    </div>
+  </div>
+);
+
+// Timeline component
+const Timeline = ({ events }) => (
+  <div className="relative pl-8 mt-6">
+    {events.map((event, index) => (
+      <div key={index} className="mb-6 relative">
+        <div className="absolute left-[-32px] w-6 h-6 rounded-full bg-purple-900/50 border-2 border-purple-500 flex items-center justify-center">
+          <div className="w-2 h-2 rounded-full bg-purple-500"></div>
+        </div>
+        {index !== events.length - 1 && (
+          <div className="absolute left-[-29px] top-6 w-[2px] h-[calc(100%+24px-6px)] bg-gray-700"></div>
+        )}
+        <div>
+          <h4 className="text-white font-medium text-sm">{event.title}</h4>
+          <p className="text-gray-400 text-xs mt-1">{event.time}</p>
+          <p className="text-gray-300 text-sm mt-2">{event.description}</p>
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
 const Dashboard = ({ reload }) => {
   const navigate = useNavigate();
   const { web3State } = useWeb3Context();
@@ -121,11 +140,15 @@ const Dashboard = ({ reload }) => {
   const [loading, setLoading] = useState(false);
   const [sizeMB, setSizeMB] = useState(0);
   const { selectedAccount, contractInstance } = web3State;
-
+  const [imageCount, setImageCount] = useState(0);
+  const [networkStatus, setNetworkStatus] = useState({ status: "connected", network: "Ethereum Mainnet" });
+  const [gasPrice, setGasPrice] = useState("42");
+  const [searchQuery, setSearchQuery] = useState("");
+  
   const handleNavigate = (path) => {
     navigate(path);
   };
-
+  
   useEffect(() => {
     const getImages = async () => {
       try {
@@ -152,7 +175,7 @@ const Dashboard = ({ reload }) => {
 
         const finalImageList = decryptedImages.map((imgData, index) => ({
           image: imgData,
-          name: files[index]?.fileName || `Image ${index + 1}`,
+          name: files[index]?.name || `Image ${index + 1}`,
         }));
 
         const getBase64Size = (base64String) => {
@@ -174,16 +197,55 @@ const Dashboard = ({ reload }) => {
         setLoading(false);
       }
     };
-
+    
+    const fetchImageCount = async () => {
+      try {
+        setLoading(true);
+        const token = localStorage.getItem("token");
+        const config = {
+          headers: {
+            "x-access-token": token,
+          },
+        };
+    
+        const res = await axios.get("http://localhost:3000/api/numberOfImages", config);
+    
+        setImageCount(res.data.count);
+      } catch (err) {
+        console.error("Error fetching image count:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    // Simulate fetching gas price
+    const fetchGasPrice = () => {
+      // In a real app, you would fetch from an API
+      setGasPrice(Math.floor(Math.random() * (60 - 30) + 30).toString());
+    };
+    
+    fetchImageCount();
     getImages();
+    fetchGasPrice();
+    
+    // Simulate network status change
+    const networkInterval = setInterval(() => {
+      const statuses = ["connected", "syncing", "connected", "connected"];
+      const networks = ["Ethereum Mainnet", "Ethereum Mainnet", "Goerli Testnet"];
+      setNetworkStatus({
+        status: statuses[Math.floor(Math.random() * statuses.length)],
+        network: networks[Math.floor(Math.random() * networks.length)]
+      });
+    }, 15000);
+    
+    return () => clearInterval(networkInterval);
   }, [contractInstance, selectedAccount, reload]);
 
-  const activity = [
-    { icon: Upload, title: "Image Upload", time: "Just now", message: "vacation_photo_23.jpg was encrypted and uploaded successfully.", isNew: true },
-    { icon: UserPlus, title: "Access Granted", time: "2 hours ago", message: "You granted access to 0x7Fc...3A4e for 3 images in 'Family Photos'.", isNew: false },
-    { icon: Share2, title: "New Share", time: "Yesterday", message: "0x8Ab...7F2d shared 5 images with you.", isNew: false },
-    { icon: Clock, title: "Encryption Process", time: "2 days ago", message: "Batch encryption of 12 images completed.", isNew: false }
-  ];
+
+  // Filter images based on search query
+  const filteredImages = images.filter(img => 
+    img.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="min-h-screen bg-black text-white pt-[80px] pb-10">
@@ -196,9 +258,14 @@ const Dashboard = ({ reload }) => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Welcome to Your Secure Vault</h1>
-          <p className="text-gray-400">Your encrypted images are safe and accessible only to you and your approved contacts.</p>
+        <div className="mb-8 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Welcome to Your Secure Vault</h1>
+            <p className="text-gray-400">Your encrypted images are safe and accessible only to you and your approved contacts.</p>
+          </div>
+          <div className="hidden md:flex items-center gap-4">
+            
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -208,7 +275,7 @@ const Dashboard = ({ reload }) => {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               <StatCard icon={Image} title="Total Images" value={images.length} change="" changeType="positive" />
               <StatCard icon={Lock} title="Encrypted" value="100%" change="AES-256" changeType="positive" />
-              <StatCard icon={Share2} title="Shared" value={images.length} />
+              <StatCard icon={Share2} title="Shared" value={imageCount} />
               <StatCard icon={Shield} title="Security Score" value="98%" change="" changeType="positive" />
             </div>
 
@@ -218,69 +285,66 @@ const Dashboard = ({ reload }) => {
               <div className="flex flex-wrap gap-3">
                 <QuickActionButton icon={Upload} label="Upload Images" onClick={() => handleNavigate('/upload')} primary />
                 <QuickActionButton icon={Image} label="View Gallery" onClick={() => handleNavigate('/myfiles')} />
-                <QuickActionButton icon={Share2} label="Manage Sharing" onClick={() => handleNavigate('/settings/sharing')} />
-                <QuickActionButton icon={Plus} label="Create Album" onClick={() => handleNavigate('/gallery/create-album')} />
+                <QuickActionButton icon={User} label="About Us" onClick={() => handleNavigate('/aboutus')} />
+               
               </div>
-            </div>
-
-            {/* Recent Images */}
-            <div className="bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-800 rounded-xl p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">Recent Images</h2>
-                <button onClick={() => handleNavigate('/myfiles')} className="text-sm text-purple-400 hover:text-purple-300 flex items-center">
-                  View all <ChevronRight size={16} />
-                </button>
-              </div>
-              {loading ? (
-                <p className="text-center text-gray-400">Loading...</p>
-              ) : images.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  {images.map(({ image, name }, index) => (
-                    <ImageThumbnail key={index} src={`data:image/jpeg;base64,${image}`} name={name} />
-                  ))}
-                </div>
-              ) : (
-                <p className="text-center text-gray-500">No images found</p>
-              )}
             </div>
 
             {/* Storage Usage */}
             <div className="bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-800 rounded-xl p-6">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold">Storage Usage</h2>
-                <button className="text-sm text-purple-400 hover:text-purple-300">Upgrade Storage</button>
+                
               </div>
               {!loading && <UsageChart size={sizeMB} />}
             </div>
-          </div>
-
-          {/* Right column - Activity */}
-          <div className="space-y-6">
-            <div className="bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-800 rounded-xl p-4">
-              <div className="relative">
-                <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
-                <input type="text" placeholder="Search images..." className="w-full bg-black/30 border border-gray-700 rounded-lg pl-10 pr-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500" />
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-800 rounded-xl overflow-hidden">
-              <div className="flex justify-between items-center p-4 border-b border-gray-800">
-                <h2 className="text-xl font-bold">Recent Activity</h2>
-                <div className="flex items-center gap-2">
-                  <button className="p-1 hover:bg-gray-700 rounded-full"><Filter size={16} className="text-gray-400" /></button>
-                  <button className="p-1 hover:bg-gray-700 rounded-full"><X size={16} className="text-gray-400" /></button>
+            
+            {/* IPFS Status */}
+            <div className="bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-800 rounded-xl p-6">
+              <h2 className="text-xl font-bold mb-4">IPFS Network Status</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-gray-800/50 p-4 rounded-lg">
+                  <div className="flex items-center gap-3 mb-2">
+                    <Database size={18} className="text-green-400" />
+                    <h3 className="font-medium text-white">Content Status</h3>
+                  </div>
+                  <p className="text-sm text-gray-400">All content pinned</p>
+                  <div className="mt-2 flex items-center text-xs">
+                    <div className="w-2 h-2 rounded-full bg-green-400 mr-1.5"></div>
+                    <span className="text-green-400">Healthy</span>
+                  </div>
+                </div>
+                
+                <div className="bg-gray-800/50 p-4 rounded-lg">
+                  <div className="flex items-center gap-3 mb-2">
+                    <ServerCrash size={18} className="text-blue-400" />
+                    <h3 className="font-medium text-white">Node Status</h3>
+                  </div>
+                  <p className="text-sm text-gray-400">3 nodes active</p>
+                  <div className="mt-2 flex items-center text-xs">
+                    <div className="w-2 h-2 rounded-full bg-green-400 mr-1.5"></div>
+                    <span className="text-green-400">Operational</span>
+                  </div>
+                </div>
+                
+                <div className="bg-gray-800/50 p-4 rounded-lg">
+                  <div className="flex items-center gap-3 mb-2">
+                    <TrendingUp size={18} className="text-purple-400" />
+                    <h3 className="font-medium text-white">Gateway Health</h3>
+                  </div>
+                  <p className="text-sm text-gray-400">25ms response time</p>
+                  <div className="mt-2 flex items-center text-xs">
+                    <div className="w-2 h-2 rounded-full bg-green-400 mr-1.5"></div>
+                    <span className="text-green-400">Optimal</span>
+                  </div>
                 </div>
               </div>
-              <div className="max-h-[600px] overflow-y-auto">
-                {activity.map((item, index) => (
-                  <ActivityItem key={index} {...item} />
-                ))}
-              </div>
-              <div className="p-4 text-center">
-                <button className="text-sm text-purple-400 hover:text-purple-300">View All Activity</button>
-              </div>
             </div>
+          </div>
 
+          {/* Right column */}
+          <div className="space-y-6">
+            {/* Security Status */}
             <div className="bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-800 rounded-xl p-6">
               <h2 className="text-xl font-bold mb-4">Security Status</h2>
               <div className="space-y-3">
@@ -302,6 +366,108 @@ const Dashboard = ({ reload }) => {
                   </div>
                 ))}
               </div>
+            </div>
+{/* recent images */}
+<div className="bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-800 rounded-xl p-6">
+  <div className="flex justify-between items-center mb-4">
+    <h2 className="text-xl font-bold">Recent Images</h2>
+    <button
+      onClick={() => handleNavigate('/myfiles')}
+      className="text-sm text-purple-400 hover:text-purple-300 flex items-center"
+    >
+      View all <ChevronRight size={16} />
+    </button>
+  </div>
+
+  {/* Search Bar */}
+  <div className="relative mb-4">
+    <input
+      type="text"
+      placeholder="Search images..."
+      value={searchQuery}
+      onChange={(e) => setSearchQuery(e.target.value)}
+      className="w-full bg-gray-800 border border-gray-700 rounded-lg py-2 pl-10 pr-4 text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+    />
+    <Search size={18} className="absolute left-3 top-2.5 text-gray-500" />
+  </div>
+
+  {/* Adjusted Grid */}
+  <div className="pb-2">
+    {loading ? (
+      <div className="flex items-center justify-center">
+        <p className="text-gray-400">Loading...</p>
+      </div>
+    ) : filteredImages.length > 0 ? (
+      <div className="grid grid-cols-2 gap-4">
+        {filteredImages.slice(0, 4).map(({ image, name }, index) => (
+          <div key={index} className="p-1 rounded-xl hover:z-10 focus-within:ring-2 focus-within:ring-purple-500">
+            <ImageThumbnail
+              src={`data:image/jpeg;base64,${image}`}
+              name={name}
+            />
+          </div>
+        ))}
+      </div>
+    ) : (
+      <div className="flex items-center justify-center">
+        <p className="text-gray-500">
+          {searchQuery ? "No matching images found" : "No images found"}
+        </p>
+      </div>
+    )}
+  </div>
+</div>
+
+
+            {/* Enhanced Security Features */}
+            
+          </div>
+        </div>
+        
+        {/* Bottom Full Width Sections */}
+        <div className="mt-6 space-y-6">
+          {/* Documentation and Resources */}
+          <div className="bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-800 rounded-xl p-6">
+            <h2 className="text-xl font-bold mb-4">Resources & Documentation</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-4 border border-gray-700 rounded-lg hover:bg-gray-800/50 transition-colors">
+                <FileText className="text-purple-400 mb-2" size={24} />
+                <h3 className="text-white font-medium mb-1">User Guide</h3>
+                <p className="text-sm text-gray-400 mb-3">Learn how to use all features of your secure vault.</p>
+                <button onClick={() => handleNavigate('/userguide')} className="text-xs text-purple-400 hover:text-purple-300 flex items-center gap-1">
+                  Read Guide <ChevronRight size={14} />
+                </button>
+              </div>
+              
+              <div className="p-4 border border-gray-700 rounded-lg hover:bg-gray-800/50 transition-colors">
+                <Info className="text-blue-400 mb-2" size={24} />
+                <h3 className="text-white font-medium mb-1">Technical Docs</h3>
+                <p className="text-sm text-gray-400 mb-3">Understand the encryption and blockchain technology.</p>
+                <button className="text-xs text-purple-400 hover:text-purple-300 flex items-center gap-1">
+                  View Docs <ChevronRight size={14} />
+                </button>
+              </div>
+              
+              <div className="p-4 border border-gray-700 rounded-lg hover:bg-gray-800/50 transition-colors">
+                <Award className="text-green-400 mb-2" size={24} />
+                <h3 className="text-white font-medium mb-1">Best Practices</h3>
+                <p className="text-sm text-gray-400 mb-3">Security recommendations for your encrypted content.</p>
+                <button className="text-xs text-purple-400 hover:text-purple-300 flex items-center gap-1">
+                  Learn More <ChevronRight size={14} />
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          {/* Footer information */}
+          <div className="mt-8 text-center">
+            <p className="text-gray-500 text-sm">
+              Your data is encrypted with AES-256-CBC and secured on IPFS with Ethereum blockchain verification.
+            </p>
+            <div className="flex justify-center gap-4 mt-3">
+              <button className="text-xs text-purple-400 hover:text-purple-300">Privacy Policy</button>
+              <button className="text-xs text-purple-400 hover:text-purple-300">Terms of Service</button>
+              <button className="text-xs text-purple-400 hover:text-purple-300">Contact Support</button>
             </div>
           </div>
         </div>
